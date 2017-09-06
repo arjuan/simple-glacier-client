@@ -1,0 +1,35 @@
+<!-- Ant build script for compiling and running the AWS Java SDK S3 sample.
+     Don't forget to fill in your AWS access credentials in (~/.aws/credentials)
+     before trying to run it.  -->
+<project name="AWS Glacier" default="run" basedir=".">
+    
+	<path id="compile.classpath">
+        <fileset dir="aws-java-sdk-1.11.188/third-party" includes="**/*.jar"/>
+        <fileset dir="aws-java-sdk-1.11.188/lib" includes="**/*.jar"/>
+    </path>
+
+	<path id="run.classpath">
+        <fileset dir="aws-java-sdk-1.11.188/third-party" includes="**/*.jar"/>
+        <fileset dir="aws-java-sdk-1.11.188/lib" includes="**/*.jar"/>
+        <pathelement location="classes"/>
+    </path>
+
+    <target name="compile">
+	<delete dir="classes"/>	
+	<mkdir dir="classes" />
+        <javac srcdir="src/main" destdir="classes" classpathref="compile.classpath" includeantruntime="false"/>
+    </target>
+
+    <target name="run">
+		
+        <java classname="glacier.ArchiveUploadHighLevel" classpathref="run.classpath" fork="true" output="./logs/aws-glacier.${archive}.log">
+			<sysproperty key="region"       value="${region}"/>
+			<sysproperty key="account"      value="${account}"/>
+			<sysproperty key="vault"        value="${vault}"/>
+			<sysproperty key="archive"      value="${archive}"/>
+			<sysproperty key="dir"          value="${dir}"/>
+			<sysproperty key="description"  value="${description}"/>
+		</java>
+	</target>
+	
+</project>
