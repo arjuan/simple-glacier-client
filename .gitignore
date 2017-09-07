@@ -39,3 +39,4 @@ Thumbs.db
 # AWS SDK directory  #
 ######################
 aws-java-sdk*
+target
