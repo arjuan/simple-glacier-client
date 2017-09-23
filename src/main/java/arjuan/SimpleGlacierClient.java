@@ -28,24 +28,24 @@ public class SimpleGlacierClient {
 
     // static initializer
     static {
-		
+        
         // commands
-		OptionGroup commands = new OptionGroup();
-		commands.addOption(Option.builder("upload").required().desc("Upload an archive file to AWS Glacier").build());
-		commands.addOption(Option.builder("list").required().desc("List all archives in an AWS Glacier vault").build());
-		options.addOptionGroup(commands);
-		
-		// required option flags
-		options.addOption(Option.builder("r").longOpt("region").required().hasArg().desc("The AWS region").build());
+        OptionGroup commands = new OptionGroup();
+        commands.addOption(Option.builder("upload").required().desc("Upload an archive file to AWS Glacier").build());
+        commands.addOption(Option.builder("list").required().desc("List all archives in an AWS Glacier vault").build());
+        options.addOptionGroup(commands);
+        
+        // required option flags
+        options.addOption(Option.builder("r").longOpt("region").required().hasArg().desc("The AWS region").build());
         options.addOption(Option.builder("a").longOpt("account").required().hasArg().desc("The AWS account id").build());
         options.addOption(Option.builder("v").longOpt("vault").required().hasArg().desc("The AWS Glacier vault name").build());
-		
-		// file upload options flags
+        
+        // file upload options flags
         options.addOption(Option.builder("f").longOpt("file").hasArg().desc("The name of the archive file to upload to AWS").build());
         options.addOption(Option.builder("p").longOpt("path").hasArg().desc("A path prefix to the local directory containing the archive file").build());
         options.addOption(Option.builder("d").longOpt("description").hasArg().desc("A description string for the archive file upload").build());
-		
-		// help option
+        
+        // help option
         options.addOption(Option.builder("h").longOpt("help").desc("Print this usage message").build());
     }
 
@@ -71,32 +71,32 @@ public class SimpleGlacierClient {
         account     = cli.getOptionValue("a");
         vault       = cli.getOptionValue("v");
 
-		log.info("Region: " + region);
-		log.info("Account: " + account);
-		log.info("Vault: " + vault);
+        log.info("Region: " + region);
+        log.info("Account: " + account);
+        log.info("Vault: " + vault);
 
-		if (cli.hasOption("upload")) {
-			handleUploadCommand(cli);
-		} else {
-			throw new UnsupportedOperationException("Currently only the '-upload' command is supported");
-		}
-	}
-	
-	private static void handleUploadCommand(CommandLine cli) {       
-		String archive = cli.getOptionValue("f");
-		if (archive == null || archive.trim().length() == 0) {
-			throw new IllegalArgumentException("Missing archive file name. Either use the -f option properly or use -h for help");
-		}
-		
-		// instantiate a new uploader and use it to upload the given file
-		ArchiveUploadHighLevel uploader = new ArchiveUploadHighLevel(region, account, vault);
-		try {
-			uploader.upload(archive, cli.getOptionValue("p"), cli.getOptionValue("d"));
-		} catch (IOException ioe) {
+        if (cli.hasOption("upload")) {
+            handleUploadCommand(cli);
+        } else {
+            throw new UnsupportedOperationException("Currently only the '-upload' command is supported");
+        }
+    }
+    
+    private static void handleUploadCommand(CommandLine cli) {       
+        String archive = cli.getOptionValue("f");
+        if (archive == null || archive.trim().length() == 0) {
+            throw new IllegalArgumentException("Missing archive file name. Either use the -f option properly or use -h for help");
+        }
+        
+        // instantiate a new uploader and use it to upload the given file
+        ArchiveUploadHighLevel uploader = new ArchiveUploadHighLevel(region, account, vault);
+        try {
+            uploader.upload(archive, cli.getOptionValue("p"), cli.getOptionValue("d"));
+        } catch (IOException ioe) {
             log.error(ioe);
             System.exit(-200);
         }
-	}
+    }
     
     static void parseForHelp(String[] args) {
         
