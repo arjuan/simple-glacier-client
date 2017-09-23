@@ -36,7 +36,7 @@
           </descriptorRefs>
 		   <archive>
             <manifest>
-              <mainClass>arjuan.ArchiveUploadHighLevel</mainClass>
+              <mainClass>arjuan.SimpleGlacierClient</mainClass>
             </manifest>
           </archive>
         </configuration>
