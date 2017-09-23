@@ -1,8 +1,6 @@
 package arjuan;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -15,23 +13,14 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.ParseException;
 
-import com.amazonaws.event.ProgressListener;
-import com.amazonaws.event.ProgressEvent;
-import com.amazonaws.event.ProgressEventType;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
-import com.amazonaws.services.glacier.AmazonGlacierClient;
-import com.amazonaws.services.glacier.transfer.ArchiveTransferManager;
-import com.amazonaws.services.glacier.transfer.UploadResult;
-
-
+/**
+ * Main class
+ */
 public class SimpleGlacierClient {
     
     static String region         = null;
     static String account        = null;
     static String vault          = null;
-    static String archive        = null;
-    static String dir            = null;
-    static String description    = null;
     
     static final Log     log     = LogFactory.getLog(SimpleGlacierClient.class);
     static final Options options = new Options();
@@ -46,20 +35,24 @@ public class SimpleGlacierClient {
 		commands.addOption(Option.builder("list").required().desc("List all archives in an AWS Glacier vault").build());
 		options.addOptionGroup(commands);
 		
-		// option flags
+		// required option flags
 		options.addOption(Option.builder("r").longOpt("region").required().hasArg().desc("The AWS region").build());
         options.addOption(Option.builder("a").longOpt("account").required().hasArg().desc("The AWS account id").build());
         options.addOption(Option.builder("v").longOpt("vault").required().hasArg().desc("The AWS Glacier vault name").build());
-        options.addOption(Option.builder("f").longOpt("file").required().hasArg().desc("The name of the archive file to upload to AWS").build());
+		
+		// file upload options flags
+        options.addOption(Option.builder("f").longOpt("file").hasArg().desc("The name of the archive file to upload to AWS").build());
         options.addOption(Option.builder("p").longOpt("path").hasArg().desc("A path prefix to the local directory containing the archive file").build());
-        options.addOption(Option.builder("d").longOpt("description").required().hasArg().desc("A description string for the archive file upload").build());
+        options.addOption(Option.builder("d").longOpt("description").hasArg().desc("A description string for the archive file upload").build());
+		
+		// help option
         options.addOption(Option.builder("h").longOpt("help").desc("Print this usage message").build());
     }
 
     /**
      * Main method
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
     
          // handle -h option
         parseForHelp(args);
@@ -69,28 +62,40 @@ public class SimpleGlacierClient {
         try {
             cli = new DefaultParser().parse(options, args, false);
         } catch (ParseException pe) {
-            System.err.println(pe.getMessage());
-            System.exit(-1);
+            log.error(pe);
+            System.exit(-100);
         }
     
         // handle execution options
         region      = cli.getOptionValue("r");
         account     = cli.getOptionValue("a");
         vault       = cli.getOptionValue("v");
-        archive     = cli.getOptionValue("f");
-        dir         = cli.getOptionValue("p");
-        description = cli.getOptionValue("d");
 
 		log.info("Region: " + region);
 		log.info("Account: " + account);
 		log.info("Vault: " + vault);
 
 		if (cli.hasOption("upload")) {
-			new ArchiveUploadHighLevel(region, account, vault).upload(archive, dir, description);
-			
+			handleUploadCommand(cli);
 		} else {
-			throw new UnsupportedOperationException("Currently only the 'upload' command is supported");
+			throw new UnsupportedOperationException("Currently only the '-upload' command is supported");
 		}
+	}
+	
+	private static void handleUploadCommand(CommandLine cli) {       
+		String archive = cli.getOptionValue("f");
+		if (archive == null || archive.trim().length() == 0) {
+			throw new IllegalArgumentException("Missing archive file name. Either use the -f option properly or use -h for help");
+		}
+		
+		// instantiate a new uploader and use it to upload the given file
+		ArchiveUploadHighLevel uploader = new ArchiveUploadHighLevel(region, account, vault);
+		try {
+			uploader.upload(archive, cli.getOptionValue("p"), cli.getOptionValue("d"));
+		} catch (IOException ioe) {
+            log.error(ioe);
+            System.exit(-200);
+        }
 	}
     
     static void parseForHelp(String[] args) {
