@@ -28,7 +28,7 @@ public class SimpleGlacierClient {
 
     // static initializer
     static {
-        
+		
         // commands
         OptionGroup commands = new OptionGroup();
         commands.addOption(Option.builder("upload").required().desc("Upload an archive file to AWS Glacier").build());
@@ -116,7 +116,7 @@ public class SimpleGlacierClient {
         }
     
         // print help text
-        new HelpFormatter().printHelp("sgc", "Simple Glacier Client (sgc) | Version: 0.1\n\n", options, "\n"+"See: https://github.com/arjuan/simple-glacier-client"+"\n\n", true);
+        new HelpFormatter().printHelp("java -jar sgc-xxx.jar", "Simple Glacier Client (sgc) | Version: 0.1\n\n", options, "\n"+"See: https://github.com/arjuan/simple-glacier-client"+"\n\n", true);
     }
 }
 
