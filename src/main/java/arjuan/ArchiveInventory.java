@@ -57,13 +57,13 @@ public class ArchiveInventory {
      * Upload an archive in the given dir to an AWS Glacier vault and assign it with given description
      */
     public void list() throws IOException {
-        this.list ("CSV", 15, null);
+        this.list ("CSV", 15, null, null);
     }
 
     /**
      * retrieve the list of archives in this objects vault
      */
-    public void list(String format, int interval, String jobId) throws IOException {
+    public void list(String format, int interval, String description, String jobId) throws IOException {
     
         log.info("Format   : " + format);
         log.info("Interval : " + interval);
@@ -72,7 +72,7 @@ public class ArchiveInventory {
         if (jobId == null) {
 			
 			// not previously requested job given, request a new job
-			jobId = sendInventoryRetrievalJobRequest(format);
+			jobId = sendInventoryRetrievalJobRequest(format, description);
 			
 			// wait for the job to complete
 			GlacierJobDescription jobDescription = retreiveJobResult(account, vault, jobId);
@@ -107,10 +107,10 @@ public class ArchiveInventory {
         this.awsClient.shutdown();
     }
 	
-	private String sendInventoryRetrievalJobRequest(String format) {
+	private String sendInventoryRetrievalJobRequest(String format, String description) {
 		
         // craete an inventory retrival request
-        JobParameters params = new JobParameters().withType("inventory-retrieval").withFormat(format);
+        JobParameters params = new JobParameters().withType("inventory-retrieval").withFormat(format).withDescription(description);
         InitiateJobRequest request = new InitiateJobRequest(account, vault, params);
         
         // Initiate job and start polling for its completion

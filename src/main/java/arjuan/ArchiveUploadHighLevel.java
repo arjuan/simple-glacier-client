@@ -18,11 +18,12 @@ import com.amazonaws.services.glacier.transfer.UploadResult;
 
 public class ArchiveUploadHighLevel {
     
-    private String region      = null;
-    private String account     = null;
-    private String vault       = null;
-    private String description = null;
-    
+    private String                 region    = null;
+    private String                 account   = null;
+    private String                 vault     = null;
+    private AmazonGlacierClient    awsClient = null;
+	private ArchiveTransferManager atm       = null;
+	
     private final Log log = LogFactory.getLog(ArchiveUploadHighLevel.class);
 
     // Ctor
@@ -30,43 +31,45 @@ public class ArchiveUploadHighLevel {
         this.region  = region;
         this.account = account;
         this.vault   = vault;
-    }
+
+        // load the credentials from the .aws profile
+        ProfileCredentialsProvider credentials = new ProfileCredentialsProvider();
+        
+		// initialize the client and ATM
+        this.awsClient = new AmazonGlacierClient(credentials);
+		this.atm = new ArchiveTransferManager(this.awsClient, credentials);
+        
+        // Uploading to Glacier at Ireland (eu-west-1)
+        this.awsClient.setEndpoint("https://glacier." + this.region + ".amazonaws.com/");
+	}
     
     /**
      * Upload an archive (assuming full or relative path) to AWS Glacier
      */
-    public void upload(String archive) throws IOException {
-        this.upload(archive, null, null);
+    public void upload(String fileName) throws IOException {
+        this.upload(fileName, null);
     }
     
     /**
      * Upload an archive in the given dir to an AWS Glacier vault and assign it with given description
      */
-    public void upload(String archive, String dir, String description) throws IOException {
+    public void upload(String fileName, String description) throws IOException {
     
-        // load the credentials from the .aws profile
-        ProfileCredentialsProvider credentials = new ProfileCredentialsProvider();
-        
-        AmazonGlacierClient client = new AmazonGlacierClient(credentials);
-        
-        // Uploading to Glacier at Ireland (eu-west-1)
-        client.setEndpoint("https://glacier." + this.region + ".amazonaws.com/");
-
-        // if given, concatenate dir to archive name
-        String fileName = (dir == null) ? archive : dir + File.separatorChar + archive;
-        
-        // handle null description
-        if (description == null) {
-            description = archive + " on " + (new Date());
-        }
-
-        log.info("File (archive): " + fileName);
-        log.info("Description: " + description);
 
         try {
-            File file = new File(fileName);
-            ArchiveTransferManager atm = new ArchiveTransferManager(client, credentials);
-            UploadResult result = atm.upload(account, vault, description, file , new UploadProgressListener(file.length()));
+            
+			File file = new File(fileName);
+			
+			// handle null description
+			if (description == null) {
+				description = file.getName() + " on " + (new Date());
+			}
+
+			log.info("File (archive): " + fileName);
+			log.info("Description: " + description);
+			
+            // upload
+            UploadResult result = this.atm.upload(account, vault, description, file , new UploadProgressListener(file.length()));
             
             // Good news! 
             log.info("Done! Archive ID: " + result.getArchiveId());

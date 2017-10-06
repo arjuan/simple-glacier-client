@@ -40,9 +40,10 @@ public class SimpleGlacierClient {
         options.addOption(Option.builder("a").longOpt("account").required().hasArg().desc("The AWS account id").build());
         options.addOption(Option.builder("v").longOpt("vault").required().hasArg().desc("The AWS Glacier vault name").build());
         
-        // file upload options flags
-        options.addOption(Option.builder("f").longOpt("file").hasArg().desc("The name of the archive file to upload to AWS").build());
-        options.addOption(Option.builder("p").longOpt("path").hasArg().desc("A path prefix to the local directory containing the archive file").build());
+        // file options flags
+        options.addOption(Option.builder("f").longOpt("file").hasArg().desc("File name to be used for the AWS job (either as upload or or output file)").build());
+		
+		// job description option
         options.addOption(Option.builder("d").longOpt("description").hasArg().desc("A description string for the archive file upload").build());
         
         // list inventory options flags
@@ -98,7 +99,7 @@ public class SimpleGlacierClient {
         // instantiate a new uploader and use it to upload the given file
         ArchiveUploadHighLevel uploader = new ArchiveUploadHighLevel(region, account, vault);
         try {
-            uploader.upload(archive, cli.getOptionValue("p"), cli.getOptionValue("d"));
+            uploader.upload(archive, cli.getOptionValue("d"));
         } catch (IOException ioe) {
             log.error(ioe);
             System.exit(-200);
@@ -126,11 +127,16 @@ public class SimpleGlacierClient {
         if (cli.hasOption("j")) {
             jobId = cli.getOptionValue("j");
         }
+		
+		String description = null;
+		if (cli.hasOption("d")) {
+			description = cli.getOptionValue("d");
+		}
 
         // instantiate a new uploader and use it to upload the given file
         ArchiveInventory inventory = new ArchiveInventory(region, account, vault);
         try {
-            inventory.list(format, interval, jobId);
+            inventory.list(format, interval, description, jobId);
         } catch (IOException ioe) {
             log.error(ioe);
             System.exit(-200);
