@@ -111,6 +111,10 @@ public class SimpleGlacierClient {
         int interval = 15;
         if (cli.hasOption("int")) {
             interval = Integer.valueOf(cli.getOptionValue("int"));
+			
+			if (interval <= 0) {
+				throw new IllegalArgumentException("Interval cannot be zero or negative");
+			}
         }
 
         String format = "CSV";

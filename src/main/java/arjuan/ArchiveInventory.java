@@ -79,7 +79,7 @@ public class ArchiveInventory {
 			while (jobDescription == null || ! jobDescription.isCompleted()) {
 				
 				// log
-				this.log.info("Job not completed! Will try again in " + interval + " seconds");
+				this.log.info("Job not completed! Will try again in " + interval + " minutes");
 				
 				// wait before accessing again (remember: AWS are counting API calls!!)
 				try {
