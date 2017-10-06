@@ -95,13 +95,13 @@ public class ArchiveUploadHighLevel {
 
             if (progressEvent.getEventType() == ProgressEventType.REQUEST_CONTENT_LENGTH_EVENT) {
                 partSize = progressEvent.getBytes();
-                ArchiveUploadHighLevel.this.log.info(new Date() + "\t" + "Part size: " + partSize);
+                ArchiveUploadHighLevel.this.log.info("Part size: " + partSize);
             }
 
             if (progressEvent.getEventType() == ProgressEventType.CLIENT_REQUEST_SUCCESS_EVENT) {
                 counter += partSize;
                 int percentage = (int)(counter * 100.0 / total);
-                ArchiveUploadHighLevel.this.log.info(new Date() + "\t" + "Successfully transferred: " + counter + " / " + total + " (" + percentage + "%)");
+                ArchiveUploadHighLevel.this.log.info("Successfully transferred: " + counter + " / " + total + " (" + percentage + "%)");
             }
         }
     }

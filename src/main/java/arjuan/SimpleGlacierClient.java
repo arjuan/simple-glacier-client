@@ -45,6 +45,10 @@ public class SimpleGlacierClient {
         options.addOption(Option.builder("p").longOpt("path").hasArg().desc("A path prefix to the local directory containing the archive file").build());
         options.addOption(Option.builder("d").longOpt("description").hasArg().desc("A description string for the archive file upload").build());
         
+        // list inventory options flags
+        options.addOption(Option.builder("int").longOpt("interval").hasArg().desc("An interval of time (sec) to wait before polling for 'list' job completion").build());
+        options.addOption(Option.builder("fmt").longOpt("format").hasArg().desc("Format of the 'list' result, either 'CSV' or 'json'").build());
+
         // help option
         options.addOption(Option.builder("h").longOpt("help").desc("Print this usage message").build());
     }
@@ -77,8 +81,10 @@ public class SimpleGlacierClient {
 
         if (cli.hasOption("upload")) {
             handleUploadCommand(cli);
-        } else {
-            throw new UnsupportedOperationException("Currently only the '-upload' command is supported");
+        } if (cli.hasOption("list")) {
+            handleListCommand(cli);
+		} else {
+            throw new UnsupportedOperationException("Currently only the '-upload' and '-list' commands are supported");
         }
     }
     
@@ -98,6 +104,29 @@ public class SimpleGlacierClient {
         }
     }
     
+    private static void handleListCommand(CommandLine cli) {
+		
+		// handle format and interval options...
+		int interval = 300;
+        if (cli.hasOption("int")) {
+			interval = Integer.valueOf(cli.getOptionValue("int"));
+        }
+
+		String format = "CSV";
+        if (cli.hasOption("fmt")) {
+			format = cli.getOptionValue("fmt");
+        }
+
+        // instantiate a new uploader and use it to upload the given file
+        ArchiveInventory inventory = new ArchiveInventory(region, account, vault);
+        try {
+            inventory.list(format, interval);
+        } catch (IOException ioe) {
+            log.error(ioe);
+            System.exit(-200);
+        }
+    }
+
     static void parseForHelp(String[] args) {
         
         // parse for help options
