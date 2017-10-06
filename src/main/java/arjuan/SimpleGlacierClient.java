@@ -46,8 +46,9 @@ public class SimpleGlacierClient {
         options.addOption(Option.builder("d").longOpt("description").hasArg().desc("A description string for the archive file upload").build());
         
         // list inventory options flags
-        options.addOption(Option.builder("int").longOpt("interval").hasArg().desc("An interval of time (sec) to wait before polling for 'list' job completion").build());
+        options.addOption(Option.builder("int").longOpt("interval").hasArg().desc("An interval of time (minutes) to wait before polling for 'list' job completion").build());
         options.addOption(Option.builder("fmt").longOpt("format").hasArg().desc("Format of the 'list' result, either 'CSV' or 'json'").build());
+        options.addOption(Option.builder("j").longOpt("job").hasArg().desc("Job Id of a previously requested retrival job").build());
 
         // help option
         options.addOption(Option.builder("h").longOpt("help").desc("Print this usage message").build());
@@ -107,7 +108,7 @@ public class SimpleGlacierClient {
     private static void handleListCommand(CommandLine cli) {
         
         // handle format and interval options...
-        int interval = 300;
+        int interval = 15;
         if (cli.hasOption("int")) {
             interval = Integer.valueOf(cli.getOptionValue("int"));
         }
@@ -117,10 +118,15 @@ public class SimpleGlacierClient {
             format = cli.getOptionValue("fmt");
         }
 
+        String jobId = null;
+        if (cli.hasOption("j")) {
+            jobId = cli.getOptionValue("j");
+        }
+
         // instantiate a new uploader and use it to upload the given file
         ArchiveInventory inventory = new ArchiveInventory(region, account, vault);
         try {
-            inventory.list(format, interval);
+            inventory.list(format, interval, jobId);
         } catch (IOException ioe) {
             log.error(ioe);
             System.exit(-200);

@@ -57,42 +57,42 @@ public class ArchiveInventory {
      * Upload an archive in the given dir to an AWS Glacier vault and assign it with given description
      */
     public void list() throws IOException {
-        this.list ("CSV", 10);
+        this.list ("CSV", 15, null);
     }
 
     /**
-     * Upload an archive in the given dir to an AWS Glacier vault and assign it with given description
+     * retrieve the list of archives in this objects vault
      */
-    public void list(String format, int interval) throws IOException {
+    public void list(String format, int interval, String jobId) throws IOException {
     
         log.info("Format   : " + format);
         log.info("Interval : " + interval);
+        log.info("Job Id   : " + jobId);
 
-        // craete an inventory retrival request
-        JobParameters params = new JobParameters().withType("inventory-retrieval").withFormat(format);
-        InitiateJobRequest request = new InitiateJobRequest(account, vault, params);
-        
-        // Initiate job and start polling for its completion
-        InitiateJobResult initiateJobResult = this.awsClient.initiateJob(request);
-        this.log.info("Initiated job 'inventory-retrieval'. jobId=" + initiateJobResult.getJobId());
-        
-        GlacierJobDescription jobDescription = retreiveJobResult(account, vault, initiateJobResult.getJobId());
-        while (jobDescription == null || ! jobDescription.isCompleted()) {
-            
-            // log
-            this.log.info("Job not completed! Will try again in " + interval + " seconds");
-            
-            // wait before accessing again (remember: AWS are counting API calls!!)
-            try {
-                TimeUnit.SECONDS.sleep(interval);
-            } catch (InterruptedException ie) {}
-            
-            // re-check job status
-            jobDescription = retreiveJobResult(account, vault, initiateJobResult.getJobId());
-        }
+        if (jobId == null) {
+			
+			// not previously requested job given, request a new job
+			jobId = sendInventoryRetrievalJobRequest(format);
+			
+			// wait for the job to complete
+			GlacierJobDescription jobDescription = retreiveJobResult(account, vault, jobId);
+			while (jobDescription == null || ! jobDescription.isCompleted()) {
+				
+				// log
+				this.log.info("Job not completed! Will try again in " + interval + " seconds");
+				
+				// wait before accessing again (remember: AWS are counting API calls!!)
+				try {
+					TimeUnit.MINUTES.sleep(interval);
+				} catch (InterruptedException ie) {}
+				
+				// re-check job status
+				jobDescription = retreiveJobResult(account, vault, jobId);
+			}
+		}
         
         // job is completed - request output and log it line by line
-        GetJobOutputResult jobOutput = this.awsClient.getJobOutput(new GetJobOutputRequest().withAccountId(this.account).withVaultName(this.vault).withJobId(initiateJobResult.getJobId()));
+        GetJobOutputResult jobOutput = this.awsClient.getJobOutput(new GetJobOutputRequest().withAccountId(this.account).withVaultName(this.vault).withJobId(jobId));
         BufferedReader reader = new BufferedReader(new InputStreamReader(jobOutput.getBody()));
         String line = reader.readLine();
         while (line != null) {
@@ -106,6 +106,19 @@ public class ArchiveInventory {
         
         this.awsClient.shutdown();
     }
+	
+	private String sendInventoryRetrievalJobRequest(String format) {
+		
+        // craete an inventory retrival request
+        JobParameters params = new JobParameters().withType("inventory-retrieval").withFormat(format);
+        InitiateJobRequest request = new InitiateJobRequest(account, vault, params);
+        
+        // Initiate job and start polling for its completion
+        InitiateJobResult initiateJobResult = this.awsClient.initiateJob(request);
+        this.log.info("Initiated job 'inventory-retrieval'. jobId=" + initiateJobResult.getJobId());
+
+		return initiateJobResult.getJobId();
+	}
     
     private GlacierJobDescription retreiveJobResult(String accountId, String vaultName, String jobId) {
         
