@@ -28,7 +28,7 @@ public class SimpleGlacierClient {
 
     // static initializer
     static {
-		
+        
         // commands
         OptionGroup commands = new OptionGroup();
         commands.addOption(Option.builder("upload").required().desc("Upload an archive file to AWS Glacier").build());
@@ -83,7 +83,7 @@ public class SimpleGlacierClient {
             handleUploadCommand(cli);
         } if (cli.hasOption("list")) {
             handleListCommand(cli);
-		} else {
+        } else {
             throw new UnsupportedOperationException("Currently only the '-upload' and '-list' commands are supported");
         }
     }
@@ -105,16 +105,16 @@ public class SimpleGlacierClient {
     }
     
     private static void handleListCommand(CommandLine cli) {
-		
-		// handle format and interval options...
-		int interval = 300;
+        
+        // handle format and interval options...
+        int interval = 300;
         if (cli.hasOption("int")) {
-			interval = Integer.valueOf(cli.getOptionValue("int"));
+            interval = Integer.valueOf(cli.getOptionValue("int"));
         }
 
-		String format = "CSV";
+        String format = "CSV";
         if (cli.hasOption("fmt")) {
-			format = cli.getOptionValue("fmt");
+            format = cli.getOptionValue("fmt");
         }
 
         // instantiate a new uploader and use it to upload the given file
