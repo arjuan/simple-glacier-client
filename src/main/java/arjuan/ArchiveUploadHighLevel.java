@@ -16,31 +16,18 @@ import com.amazonaws.services.glacier.transfer.ArchiveTransferManager;
 import com.amazonaws.services.glacier.transfer.UploadResult;
 
 
-public class ArchiveUploadHighLevel {
+public class ArchiveUploadHighLevel extends BaseAmazonGlacierClientAware {
     
-    private String                 region    = null;
-    private String                 account   = null;
-    private String                 vault     = null;
-    private AmazonGlacierClient    awsClient = null;
-	private ArchiveTransferManager atm       = null;
+	private ArchiveTransferManager atm = null;
 	
     private final Log log = LogFactory.getLog(ArchiveUploadHighLevel.class);
 
     // Ctor
     public ArchiveUploadHighLevel(String region, String account, String vault) {
-        this.region  = region;
-        this.account = account;
-        this.vault   = vault;
-
-        // load the credentials from the .aws profile
-        ProfileCredentialsProvider credentials = new ProfileCredentialsProvider();
-        
-		// initialize the client and ATM
-        this.awsClient = new AmazonGlacierClient(credentials);
-		this.atm = new ArchiveTransferManager(this.awsClient, credentials);
-        
-        // Uploading to Glacier at Ireland (eu-west-1)
-        this.awsClient.setEndpoint("https://glacier." + this.region + ".amazonaws.com/");
+		
+		super (region, account, vault);
+		
+		this.atm = new ArchiveTransferManager(this.awsClient, this.credentialsProvider);
 	}
     
     /**
@@ -55,7 +42,6 @@ public class ArchiveUploadHighLevel {
      */
     public void upload(String fileName, String description) throws IOException {
     
-
         try {
             
 			File file = new File(fileName);

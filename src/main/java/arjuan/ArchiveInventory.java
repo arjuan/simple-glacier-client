@@ -28,29 +28,13 @@ import com.amazonaws.services.glacier.model.GlacierJobDescription;
 
 
 
-public class ArchiveInventory {
-    
-    private String region                 = null;
-    private String account                = null;
-    private String vault                  = null;
-    private AmazonGlacierClient awsClient = null;
+public class ArchiveInventory extends BaseAmazonGlacierClientAware {
     
     private final Log log = LogFactory.getLog(ArchiveInventory.class);
 
     // Ctor
     public ArchiveInventory(String region, String account, String vault) {
-        
-        this.region  = region;
-        this.account = account;
-        this.vault   = vault;
-
-        // load the credentials from the .aws profile
-        ProfileCredentialsProvider credentials = new ProfileCredentialsProvider();
-        
-        this.awsClient = new AmazonGlacierClient(credentials);
-        
-        // Set Glacier end-point
-        this.awsClient.setEndpoint("https://glacier." + this.region + ".amazonaws.com/");
+		super (region, account, vault);
     }
         
     /**
@@ -136,6 +120,5 @@ public class ArchiveInventory {
         // job not found
         return null;
     }
-    
 }
 
