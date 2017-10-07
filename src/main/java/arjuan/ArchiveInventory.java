@@ -1,9 +1,10 @@
 package arjuan;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.BufferedReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -41,17 +42,18 @@ public class ArchiveInventory extends BaseAmazonGlacierClientAware {
      * Upload an archive in the given dir to an AWS Glacier vault and assign it with given description
      */
     public void list() throws IOException {
-        this.list ("CSV", 15, null, null);
+        this.list ("CSV", 15, null, null, null);
     }
 
     /**
      * retrieve the list of archives in this objects vault
      */
-    public void list(String format, int interval, String description, String jobId) throws IOException {
+    public void list(String format, int interval, String description, String jobId, String fileName) throws IOException {
     
-        log.info("Format   : " + format);
-        log.info("Interval : " + interval);
-        log.info("Job Id   : " + jobId);
+        log.info("Format    : " + format);
+        log.info("Description  : " + description);
+        log.info("Interval  : " + interval);
+        log.info("Job Id    : " + jobId);
 
         if (jobId == null) {
 			
@@ -77,18 +79,32 @@ public class ArchiveInventory extends BaseAmazonGlacierClientAware {
         
         // job is completed - request output and log it line by line
         GetJobOutputResult jobOutput = this.awsClient.getJobOutput(new GetJobOutputRequest().withAccountId(this.account).withVaultName(this.vault).withJobId(jobId));
-        BufferedReader reader = new BufferedReader(new InputStreamReader(jobOutput.getBody()));
-        String line = reader.readLine();
-        while (line != null) {
-            // log
-            this.log.info(line);
+		
+		// determine target file name using the given name or use default name if needed
+		String path = fileName;
+		if (path == null) {
+			
+			// caclulate file name suffix out of the JOB content type (either CSV or JSON)
+			String suffix = jobOutput.getContentType();
+			if (suffix.equalsIgnoreCase("text/csv")) {
+				suffix = "csv";
+			} else if (suffix.equalsIgnoreCase("application/json")) {
+				suffix = "json";
+			} else {
+				suffix = format; // not supposed to get here...
+			}
+			
+			// default - informative - file output file name
+			path = "aws.glacier." + this.region + "." + this.vault + "." + new SimpleDateFormat("yyyyMMdd").format(new Date()) + "." + suffix;
+		}
 
-            line = reader.readLine();
-        }
-        
-        this.log.info("Done");
+		// write to file
+        log.info("Writing job output to file " + path);
+		Files.copy(jobOutput.getBody(), Paths.get(path), StandardCopyOption.REPLACE_EXISTING);
         
         this.awsClient.shutdown();
+
+        this.log.info("Done");
     }
 	
 	private String sendInventoryRetrievalJobRequest(String format, String description) {

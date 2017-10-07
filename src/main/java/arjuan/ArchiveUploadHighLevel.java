@@ -15,7 +15,6 @@ import com.amazonaws.services.glacier.AmazonGlacierClient;
 import com.amazonaws.services.glacier.transfer.ArchiveTransferManager;
 import com.amazonaws.services.glacier.transfer.UploadResult;
 
-
 public class ArchiveUploadHighLevel extends BaseAmazonGlacierClientAware {
     
 	private ArchiveTransferManager atm = null;

@@ -90,16 +90,19 @@ public class SimpleGlacierClient {
         }
     }
     
-    private static void handleUploadCommand(CommandLine cli) {       
-        String archive = cli.getOptionValue("f");
-        if (archive == null || archive.trim().length() == 0) {
+    private static void handleUploadCommand(CommandLine cli) {
+		
+		// File name is required for the 'upload'... dahhh
+		if (!cli.hasOption("f")) {
             throw new IllegalArgumentException("Missing archive file name. Either use the -f option properly or use -h for help");
         }
         
         // instantiate a new uploader and use it to upload the given file
         ArchiveUploadHighLevel uploader = new ArchiveUploadHighLevel(region, account, vault);
+		
+		//upload archive denoted by fileName
         try {
-            uploader.upload(archive, cli.getOptionValue("d"));
+            uploader.upload(cli.getOptionValue("f"), cli.getOptionValue("d"));
         } catch (IOException ioe) {
             log.error(ioe);
             System.exit(-200);
@@ -133,10 +136,15 @@ public class SimpleGlacierClient {
 			description = cli.getOptionValue("d");
 		}
 
+		String fileName = null;
+		if (cli.hasOption("f")) {
+			fileName = cli.getOptionValue("f");
+		}
+
         // instantiate a new uploader and use it to upload the given file
         ArchiveInventory inventory = new ArchiveInventory(region, account, vault);
         try {
-            inventory.list(format, interval, description, jobId);
+            inventory.list(format, interval, description, jobId, fileName);
         } catch (IOException ioe) {
             log.error(ioe);
             System.exit(-200);
