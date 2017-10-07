@@ -17,17 +17,17 @@ import com.amazonaws.services.glacier.transfer.UploadResult;
 
 public class ArchiveUploadHighLevel extends BaseAmazonGlacierClientAware {
     
-	private ArchiveTransferManager atm = null;
-	
+    private ArchiveTransferManager atm = null;
+    
     private final Log log = LogFactory.getLog(ArchiveUploadHighLevel.class);
 
     // Ctor
     public ArchiveUploadHighLevel(String region, String account, String vault) {
-		
-		super (region, account, vault);
-		
-		this.atm = new ArchiveTransferManager(this.awsClient, this.credentialsProvider);
-	}
+        
+        super (region, account, vault);
+        
+        this.atm = new ArchiveTransferManager(this.awsClient, this.credentialsProvider);
+    }
     
     /**
      * Upload an archive (assuming full or relative path) to AWS Glacier
@@ -43,16 +43,16 @@ public class ArchiveUploadHighLevel extends BaseAmazonGlacierClientAware {
     
         try {
             
-			File file = new File(fileName);
-			
-			// handle null description
-			if (description == null) {
-				description = file.getName() + " on " + (new Date());
-			}
+            File file = new File(fileName);
+            
+            // handle null description
+            if (description == null) {
+                description = file.getName() + " on " + (new Date());
+            }
 
-			log.info("File (archive): " + fileName);
-			log.info("Description: " + description);
-			
+            log.info("File (archive): " + fileName);
+            log.info("Description: " + description);
+            
             // upload
             UploadResult result = this.atm.upload(account, vault, description, file , new UploadProgressListener(file.length()));
             

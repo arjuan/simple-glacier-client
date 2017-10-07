@@ -42,8 +42,8 @@ public class SimpleGlacierClient {
         
         // file options flags
         options.addOption(Option.builder("f").longOpt("file").hasArg().desc("File name to be used for the AWS job (either as upload or or output file)").build());
-		
-		// job description option
+        
+        // job description option
         options.addOption(Option.builder("d").longOpt("description").hasArg().desc("A description string for the archive file upload").build());
         
         // list inventory options flags
@@ -91,16 +91,16 @@ public class SimpleGlacierClient {
     }
     
     private static void handleUploadCommand(CommandLine cli) {
-		
-		// File name is required for the 'upload'... dahhh
-		if (!cli.hasOption("f")) {
+        
+        // File name is required for the 'upload'... dahhh
+        if (!cli.hasOption("f")) {
             throw new IllegalArgumentException("Missing archive file name. Either use the -f option properly or use -h for help");
         }
         
         // instantiate a new uploader and use it to upload the given file
         ArchiveUploadHighLevel uploader = new ArchiveUploadHighLevel(region, account, vault);
-		
-		//upload archive denoted by fileName
+        
+        //upload archive denoted by fileName
         try {
             uploader.upload(cli.getOptionValue("f"), cli.getOptionValue("d"));
         } catch (IOException ioe) {
@@ -115,31 +115,35 @@ public class SimpleGlacierClient {
         int interval = 15;
         if (cli.hasOption("int")) {
             interval = Integer.valueOf(cli.getOptionValue("int"));
-			
-			if (interval <= 0) {
-				throw new IllegalArgumentException("Interval cannot be zero or negative");
-			}
-        }
-
-        String format = "CSV";
-        if (cli.hasOption("fmt")) {
-            format = cli.getOptionValue("fmt");
+            
+            if (interval <= 0) {
+                throw new IllegalArgumentException("Interval cannot be zero or negative");
+            }
         }
 
         String jobId = null;
         if (cli.hasOption("j")) {
             jobId = cli.getOptionValue("j");
         }
-		
-		String description = null;
-		if (cli.hasOption("d")) {
-			description = cli.getOptionValue("d");
-		}
 
-		String fileName = null;
-		if (cli.hasOption("f")) {
-			fileName = cli.getOptionValue("f");
-		}
+        String format = "CSV";
+        if (cli.hasOption("fmt")) {
+            if (jobId == null) {
+                format = cli.getOptionValue("fmt");
+            } else {
+                log.warn("Ignoring the given '-fmt' value. Since option '-j' was used and the output will be formatted according to the original format given upon job creation");
+            }
+        }
+        
+        String description = null;
+        if (cli.hasOption("d")) {
+            description = cli.getOptionValue("d");
+        }
+
+        String fileName = null;
+        if (cli.hasOption("f")) {
+            fileName = cli.getOptionValue("f");
+        }
 
         // instantiate a new uploader and use it to upload the given file
         ArchiveInventory inventory = new ArchiveInventory(region, account, vault);
