@@ -30,5 +30,3 @@ Simple Glacier Client (sgc) | Version: 0.1
  
  -v,--vault <arg>         The AWS Glacier vault name
        
-
-See: https://github.com/arjuan/simple-glacier-client
