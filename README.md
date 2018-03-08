@@ -3,7 +3,7 @@ A simple CLI interface to AWS Glacier
 
 [![Build Status](https://travis-ci.org/arjuan/simple-glacier-client.svg)](https://travis-ci.org/arjuan/simple-glacier-client)
 
-usage: java -jar sgc-<version>.jar -a <arg> [-d <arg>] [-f <arg>] [-fmt <arg>]
+usage: java -jar sgc-\<version\>.jar -a <arg> [-d <arg>] [-f <arg>] [-fmt <arg>]
        [-h] [-int <arg>] [-j <arg>] [-list | -upload] -r <arg>  -v <arg>
        
 Simple Glacier Client (sgc) | Version: 0.1
