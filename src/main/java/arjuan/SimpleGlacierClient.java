@@ -18,6 +18,7 @@ import org.apache.commons.cli.ParseException;
  */
 public class SimpleGlacierClient {
     
+    // added cooment for Benny
     static String region         = null;
     static String account        = null;
     static String vault          = null;
