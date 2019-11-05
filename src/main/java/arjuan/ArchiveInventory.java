@@ -26,7 +26,7 @@ import com.amazonaws.services.glacier.model.ListJobsResult;
 import com.amazonaws.services.glacier.model.GetJobOutputRequest;
 import com.amazonaws.services.glacier.model.GetJobOutputResult;
 import com.amazonaws.services.glacier.model.GlacierJobDescription;
-
+import java.util.*;
 
 
 public class ArchiveInventory extends BaseAmazonGlacierClientAware {
