@@ -14,7 +14,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.ParseException;
 
 /**
- * Main class
+ * Main class - handle command line arguments and start the relevant job
  */
 public class SimpleGlacierClient {
     
